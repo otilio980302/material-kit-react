@@ -1,10 +1,9 @@
 import { filter } from 'lodash';
 import { Icon } from '@iconify/react';
 import { sentenceCase } from 'change-case';
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import plusFill from '@iconify/icons-eva/plus-fill';
 import { Link as RouterLink } from 'react-router-dom';
-import axios from 'axios';
 // material
 import {
   Card,
@@ -19,26 +18,16 @@ import {
   Container,
   Typography,
   TableContainer,
-  TablePagination,
-  Modal,
-  Box,
-  TextField,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControl
+  TablePagination
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Form, Formik } from 'formik';
 // components
 import Page from '../components/Page';
 import Label from '../components/Label';
 import Scrollbar from '../components/Scrollbar';
 import SearchNotFound from '../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../components/_dashboard/user';
-
 //
-// import USERLIST from '../_mocks_/user';
+import USERLIST from '../_mocks_/client';
 
 // ----------------------------------------------------------------------
 
@@ -50,21 +39,6 @@ const TABLE_HEAD = [
   { id: 'status', label: 'Status', alignRight: false },
   { id: '' }
 ];
-
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 700,
-
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4
-};
-
-// let USERLIST = null;
 
 // ----------------------------------------------------------------------
 
@@ -97,20 +71,13 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function User() {
+export default function Client() {
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
   const [selected, setSelected] = useState([]);
   const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [USERLIST, setUSERLIST] = useState([]);
-
-  const run = async () => {
-    await axios.get(`https://backendomacore.herokuapp.com/getUser`).then((res) => {
-      setUSERLIST(res.data);
-    });
-  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -158,12 +125,8 @@ export default function User() {
     setFilterName(event.target.value);
   };
 
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
-  run();
+
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
@@ -173,16 +136,15 @@ export default function User() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Client
           </Typography>
           <Button
             variant="contained"
             component={RouterLink}
             to="#"
             startIcon={<Icon icon={plusFill} />}
-            onClick={handleOpen}
           >
-            New User
+            New Client
           </Button>
         </Stack>
 
@@ -283,101 +245,6 @@ export default function User() {
           />
         </Card>
       </Container>
-      {/* Modal for new users */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h10" component="h2">
-            New User
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            <Formik
-              initialValues={{
-                id: '4',
-                mail: '',
-                password: '',
-                name: '',
-                lastname: '',
-                date: '2021-05-19',
-                isVerified: true,
-                role: 'seller',
-                status: 'active',
-                company: 'WPH Company'
-              }}
-              onSubmit={(value) => {
-                axios
-                  .post('https://backendomacore.herokuapp.com/addUser', value)
-                  .then((response) => console.log(response))
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              }}
-            >
-              {({ values, handleSubmit, handleBlur, getFieldProps }) => (
-                <Form onSubmit={handleSubmit}>
-                  <Stack spacing={3}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="First name"
-                        {...getFieldProps('name')}
-                        onBlur={handleBlur}
-                      />
-                      <TextField
-                        fullWidth
-                        label="Last name"
-                        {...getFieldProps('lastname')}
-                        onBlur={handleBlur}
-                      />
-                    </Stack>
-                    <TextField
-                      fullWidth
-                      autoComplete="username"
-                      type="email"
-                      label="Email address"
-                      {...getFieldProps('mail')}
-                    />
-                    <TextField
-                      fullWidth
-                      autoComplete="current-password"
-                      label="Password"
-                      {...getFieldProps('password')}
-                    />
-
-                    <Stack direction={{ xs: 'column', sm: 'row' }}>
-                      <FormControl sx={{ m: 1, minWidth: 300 }}>
-                        <InputLabel id="demo-simple-select-label">WHP Company</InputLabel>
-                        <Select
-                          {...getFieldProps('company')}
-                          labelId="demo-simple-select-label"
-                          id="demo-simple-select"
-                          disabled
-                        >
-                          <MenuItem>WPH Company</MenuItem>
-                        </Select>
-                      </FormControl>
-                      <FormControl sx={{ m: 1, minWidth: 300 }}>
-                        <InputLabel id="demo-simple-select-label">Role</InputLabel>
-                        <Select disabled labelId="demo-simple-select-label" id="demo-simple-select">
-                          <MenuItem>Leader</MenuItem>
-                          <MenuItem>Buyer</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Stack>
-                    <LoadingButton fullWidth size="large" type="submit" variant="contained">
-                      Insert
-                    </LoadingButton>
-                  </Stack>
-                </Form>
-              )}
-            </Formik>
-          </Typography>
-        </Box>
-      </Modal>
     </Page>
   );
 }
