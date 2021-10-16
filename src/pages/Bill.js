@@ -33,7 +33,6 @@ import {
   MenuItem,
   Select
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 // components
 import Page from '../components/Page';
 import Label from '../components/Label';
