@@ -41,16 +41,13 @@ import Scrollbar from '../components/Scrollbar';
 import SearchNotFound from '../components/SearchNotFound';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../components/_dashboard/user';
 //
-import USERLIST from '../_mocks_/client';
-import { previousDay } from 'date-fns';
 
 // ----------------------------------------------------------------------
 
 export default function Bill() {
-  // const formatuser = { product: '', price: '', quantity: '', amount: '' };
-
   const [PRODUCTS, setPRODUCTS] = useState([]);
-  const [Rows, setRows] = useState([]);
+  const initialFormData = [];
+  const [Rows, setRows] = useState(initialFormData);
 
   useEffect(() => {
     const run = async () => {
@@ -60,8 +57,6 @@ export default function Bill() {
     };
     run();
   }, []);
-
-  let rows = [];
 
   return (
     <Page title="User | Minimal-UI">
@@ -80,16 +75,15 @@ export default function Bill() {
           </Button>
         </Stack>
         <Formik
+          enableReinitialize
           initialValues={{
             product: '',
             price: '',
             quantity: '',
             amount: ''
           }}
-          onSubmit={(value) => {
-            rows = value;
-            setRows(..., rows);
-            console.log(rows);
+          onSubmit={(value, { resetForm }) => {
+            resetForm();
           }}
         >
           {({ values, handleSubmit, handleBlur, getFieldProps, onSelect }) => (
@@ -148,7 +142,7 @@ export default function Bill() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((s) => (
+                {Rows.map((s) => (
                   <TableRow
                     key={s.product}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
