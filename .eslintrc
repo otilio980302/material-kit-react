@@ -8,7 +8,10 @@
     "airbnb",
     "prettier",
     "plugin:jsx-a11y/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
   ],
   "plugins": ["prettier", "react", "react-hooks"],
   "parser": "@babel/eslint-parser",

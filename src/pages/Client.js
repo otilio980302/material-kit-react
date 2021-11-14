@@ -1,9 +1,10 @@
 import { filter } from 'lodash';
 import { Icon } from '@iconify/react';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import plusFill from '@iconify/icons-eva/plus-fill';
 import { Link as RouterLink } from 'react-router-dom';
+import axios from 'axios';
 // material
 import {
   Card,
@@ -18,7 +19,8 @@ import {
   Container,
   Typography,
   TableContainer,
-  TablePagination
+  TablePagination,
+  TableHead
 } from '@mui/material';
 // components
 import Page from '../components/Page';
@@ -131,21 +133,38 @@ export default function Client() {
 
   const isUserNotFound = filteredUsers.length === 0;
 
+  const [Journeys, setJourneys] = useState([]);
+  const [Getcost, setGetcost] = useState([]);
+  const [TableState, setTableState] = useState([]);
+
+  useEffect(() => {
+    const run = async () => {
+      await axios.get(`https://backendtrucks1.herokuapp.com/getjourney`).then((res) => {
+        setJourneys(res.data);
+      });
+    };
+
+    const PromiseGetCost = async () => {
+      await axios.get(`https://backendtrucks1.herokuapp.com/getStartDestiny`).then((res) => {
+        setGetcost(res.data);
+      });
+    };
+    run();
+    PromiseGetCost();
+  }, []);
+
+  const tableconvert = () => {
+    const row = [...Journeys];
+    setTableState({ row });
+  };
+
   return (
     <Page title="User | Minimal-UI">
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            Client
+            Viajes
           </Typography>
-          <Button
-            variant="contained"
-            component={RouterLink}
-            to="#"
-            startIcon={<Icon icon={plusFill} />}
-          >
-            New Client
-          </Button>
         </Stack>
 
         <Card>
@@ -157,79 +176,61 @@ export default function Client() {
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
-              <Table>
-                <UserListHead
-                  order={order}
-                  orderBy={orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
-                  numSelected={selected.length}
-                  onRequestSort={handleRequestSort}
-                  onSelectAllClick={handleSelectAllClick}
-                />
+              <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>id</TableCell>
+                    <TableCell align="right">Origen</TableCell>
+                    <TableCell align="right">Destinos</TableCell>
+                    <TableCell align="right">Fecha</TableCell>
+                    <TableCell align="right">Condicion</TableCell>
+                    <TableCell align="right">Porcentaje</TableCell>
+                    <TableCell align="right">SubTotal</TableCell>
+                    <TableCell align="right">Total</TableCell>
+                    {/* <TableCell align="right">action</TableCell> */}
+                  </TableRow>
+                </TableHead>
                 <TableBody>
-                  {filteredUsers
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                      const isItemSelected = selected.indexOf(name) !== -1;
+                  {Journeys.map((s) => (
+                    <TableRow key={s.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableCell component="th" scope="row">
+                        {s.id}
+                      </TableCell>
+                      <TableCell align="right">{s.start_point}</TableCell>
+                      <TableCell align="right">{s.destiny.map((s) => s.concat(','))}</TableCell>
+                      <TableCell align="right">{s.date}</TableCell>
+                      <TableCell align="right">{s.total_payment}</TableCell>
+                      <TableCell align="right">
+                        {Getcost.map((g) =>
+                          g.id_startpoint === '8100' && g.id_destiny === s.destiny[1]
+                            ? g.coldcost
+                            : ''
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {s.destiny.map((desti, a = desti) =>
+                          s.total_payment === 'Frio'
+                            ? Getcost.reduce(
+                                (acc, x) => (acc = acc > x.coldcost ? acc : x.coldcost),
+                                0
+                              )
+                            : ''
+                        )}
 
-                      return (
-                        <TableRow
-                          hover
-                          key={id}
-                          tabIndex={-1}
-                          role="checkbox"
-                          selected={isItemSelected}
-                          aria-checked={isItemSelected}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={isItemSelected}
-                              onChange={(event) => handleClick(event, name)}
-                            />
-                          </TableCell>
-                          <TableCell component="th" scope="row" padding="none">
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={avatarUrl} />
-                              <Typography variant="subtitle2" noWrap>
-                                {name}
-                              </Typography>
-                            </Stack>
-                          </TableCell>
-                          <TableCell align="left">{company}</TableCell>
-                          <TableCell align="left">{role}</TableCell>
-                          <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                          <TableCell align="left">
-                            <Label
-                              variant="ghost"
-                              color={(status === 'banned' && 'error') || 'success'}
-                            >
-                              {sentenceCase(status)}
-                            </Label>
-                          </TableCell>
-
-                          <TableCell align="right">
-                            <UserMoreMenu />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
-                {isUserNotFound && (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <SearchNotFound searchQuery={filterName} />
+                        {/* {Getcost.map((cost) =>
+                          cost.id_startpoint === '8100' && s.total_payment === 'Frio'
+                            ? s.destiny.reduce((acc, item) => (acc = acc > item ? acc : item))
+                            : ''
+                        )} */}
+                      </TableCell>
+                      <TableCell align="right">
+                        {Getcost.map((g) =>
+                          g.id_startpoint === '8100' && g.id_destiny === '1400' ? g.coldcost : ''
+                        )}
                       </TableCell>
                     </TableRow>
-                  </TableBody>
-                )}
+                  ))}
+                </TableBody>
               </Table>
             </TableContainer>
           </Scrollbar>

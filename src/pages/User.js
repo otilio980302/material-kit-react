@@ -306,7 +306,7 @@ export default function User() {
                 isVerified: true,
                 role: 'seller',
                 status: 'active',
-                company: 'WPH Company'
+                company: 'SRL'
               }}
               onSubmit={(value) => {
                 axios

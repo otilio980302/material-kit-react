@@ -24,10 +24,7 @@ export default function Router() {
         { element: <Navigate to="/dashboard/app" replace /> },
         { path: 'app', element: <DashboardApp /> },
         { path: 'user', element: <User /> },
-        { path: 'client', element: <Client /> },
-        { path: 'bill', element: <Bill /> },
-        { path: 'products', element: <Products /> },
-        { path: 'blog', element: <Blog /> }
+        { path: 'client', element: <Client /> }
       ]
     },
     {
